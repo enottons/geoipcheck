@@ -33,17 +33,16 @@ type CountryCheckServiceClient interface {
 	// allowed_countries.
 	//
 	// Errors:
-	//
-	//	INVALID_ARGUMENT    bad ip or country list. Details carry an ErrorInfo
-	//	                    (reason = the same code the HTTP API returns, e.g.
-	//	                    "invalid_country_code"; metadata "field" and
-	//	                    "suggestion" when known). When one field is at
-	//	                    fault, a BadRequest names it too.
-	//	UNAVAILABLE         no GeoIP database is loaded. Retry, normally on
-	//	                    another replica. Details carry ErrorInfo
-	//	                    (reason "database_unavailable") and RetryInfo.
-	//	RESOURCE_EXHAUSTED  request message over 8 KiB.
-	//	DEADLINE_EXCEEDED, CANCELLED, INTERNAL as usual.
+	//   INVALID_ARGUMENT    bad ip or country list. Details carry an ErrorInfo
+	//                       (reason = the same code the HTTP API returns, e.g.
+	//                       "invalid_country_code"; metadata "field" and
+	//                       "suggestion" when known). When one field is at
+	//                       fault, a BadRequest names it too.
+	//   UNAVAILABLE         no GeoIP database is loaded. Retry, normally on
+	//                       another replica. Details carry ErrorInfo
+	//                       (reason "database_unavailable") and RetryInfo.
+	//   RESOURCE_EXHAUSTED  request message over 8 KiB.
+	//   DEADLINE_EXCEEDED, CANCELLED, INTERNAL as usual.
 	//
 	// Every ErrorInfo has domain "geoipcheck". Its reason values are lowercase,
 	// not AIP-193 UPPER_SNAKE, so one switch covers both transports.
@@ -83,17 +82,16 @@ type CountryCheckServiceServer interface {
 	// allowed_countries.
 	//
 	// Errors:
-	//
-	//	INVALID_ARGUMENT    bad ip or country list. Details carry an ErrorInfo
-	//	                    (reason = the same code the HTTP API returns, e.g.
-	//	                    "invalid_country_code"; metadata "field" and
-	//	                    "suggestion" when known). When one field is at
-	//	                    fault, a BadRequest names it too.
-	//	UNAVAILABLE         no GeoIP database is loaded. Retry, normally on
-	//	                    another replica. Details carry ErrorInfo
-	//	                    (reason "database_unavailable") and RetryInfo.
-	//	RESOURCE_EXHAUSTED  request message over 8 KiB.
-	//	DEADLINE_EXCEEDED, CANCELLED, INTERNAL as usual.
+	//   INVALID_ARGUMENT    bad ip or country list. Details carry an ErrorInfo
+	//                       (reason = the same code the HTTP API returns, e.g.
+	//                       "invalid_country_code"; metadata "field" and
+	//                       "suggestion" when known). When one field is at
+	//                       fault, a BadRequest names it too.
+	//   UNAVAILABLE         no GeoIP database is loaded. Retry, normally on
+	//                       another replica. Details carry ErrorInfo
+	//                       (reason "database_unavailable") and RetryInfo.
+	//   RESOURCE_EXHAUSTED  request message over 8 KiB.
+	//   DEADLINE_EXCEEDED, CANCELLED, INTERNAL as usual.
 	//
 	// Every ErrorInfo has domain "geoipcheck". Its reason values are lowercase,
 	// not AIP-193 UPPER_SNAKE, so one switch covers both transports.

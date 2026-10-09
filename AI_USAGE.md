@@ -688,3 +688,15 @@ file resolves. One broken anchor (`#grpc-api`) was fixed.
   row, log field order, the service.yaml balancing comment, the mmap
   wording. **Verdict:** accepted, all fixed. 9 MB vs 10 MB across docs:
   left; both are "about".
+
+### First CI run
+
+**Prompt:** pushed to GitHub; pasted the failing `lint` log ("generated code
+is current": `checks_grpc.pb.go` modified).
+
+**Root cause: the local proto plugins were built with Go 1.26.9.** CI builds
+them with Go 1.27.2 from go.mod. The plugins gofmt their output with the Go
+that built them, and 1.27 formats the proto's indented "Errors:" comment
+block differently. Same plugin versions, different bytes. Rebuilt the
+plugins with 1.27.2, regenerated, and noted the rule in the Makefile.
+**Verdict:** accepted. The drift check did its job on the first run.

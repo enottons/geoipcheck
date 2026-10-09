@@ -28,7 +28,9 @@ PKG             := ./...
 LDFLAGS         ?= -s -w
 
 # Pinned so local and CI output can't drift. protoc-gen-go follows the
-# protobuf version in go.mod.
+# protobuf version in go.mod. The Go version that builds the plugins matters
+# too: they gofmt their output with it, and doc-comment formatting changes
+# between releases. Run `make tools` with the Go version in go.mod.
 BUF_VERSION                := v1.73.0
 PROTOC_GEN_GO_GRPC_VERSION := v1.6.2
 GOLANGCI_LINT_VERSION      := v2.14.0
