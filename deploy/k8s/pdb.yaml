@@ -1,0 +1,12 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: geoipcheck
+spec:
+  maxUnavailable: 1
+  # Pods are all not ready until the first download lands. Without this, a
+  # node drain in that window would block forever.
+  unhealthyPodEvictionPolicy: AlwaysAllow
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: geoipcheck

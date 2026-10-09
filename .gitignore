@@ -1,0 +1,26 @@
+# Build output
+/bin/
+/dist/
+
+# Test and profiling artifacts
+*.test
+*.out
+coverage.*
+/testdata/fuzz/
+
+# Real MaxMind databases must never be committed (GeoLite2 EULA). Test fixtures
+# under testdata/ are MaxMind's MIT/Apache-licensed test databases.
+*.mmdb
+!/testdata/*.mmdb
+
+# Local config that may contain a MaxMind license key
+GeoIP.conf
+.env
+deploy/geoipupdate.env
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

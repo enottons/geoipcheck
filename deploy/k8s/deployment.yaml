@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: geoipcheck
+  labels:
+    app.kubernetes.io/name: geoipcheck
+spec:
+  # No replicas field: the HPA owns the count (min 3). Setting it here would
+  # reset the count on every apply.
+  revisionHistoryLimit: 5
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: geoipcheck
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: geoipcheck
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8081"
+        prometheus.io/path: /metrics
+    spec:
+      automountServiceAccountToken: false
+      # Must exceed GEOIPCHECK_DRAIN_DELAY + GEOIPCHECK_SHUTDOWN_TIMEOUT
+      # (5s + 15s) with margin, or the kubelet kills the pod mid-drain.
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      topologySpreadConstraints:
+        # Survive a zone or a node. ScheduleAnyway so a small cluster can
+        # still scale past its node count.
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: geoipcheck
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: geoipcheck
+      containers:
+        - name: geoipcheck
+          image: geoipcheck
+          env:
+            - name: GEOIPCHECK_DB_PATH
+              value: /data/GeoLite2-Country.mmdb
+            - name: GEOIPCHECK_DRAIN_DELAY
+              value: 5s
+            - name: GEOIPCHECK_SHUTDOWN_TIMEOUT
+              value: 15s
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: grpc
+              containerPort: 9090
+            - name: admin
+              containerPort: 8081
+          # Liveness is "the process answers". A missing database is a
+          # readiness problem; restarting would not fix it.
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: admin
+            periodSeconds: 5
+            failureThreshold: 2
+          resources:
+            # The database is about 10 MB in memory, twice that during a
+            # reload. No CPU limit: throttling a latency-bound service hurts
+            # more than it protects.
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: geoip-data
+              mountPath: /data
+              readOnly: true
+      volumes:
+        - name: geoip-data
+          persistentVolumeClaim:
+            claimName: geoip-data
+            readOnly: true

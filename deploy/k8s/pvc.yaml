@@ -1,0 +1,15 @@
+# One copy of the database, written by the CronJob, read by every pod (D11).
+# Needs a ReadWriteMany storage class (NFS, EFS, Filestore, Azure Files).
+# Without one, see the sidecar fallback in deploy/k8s/README.md.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: geoip-data
+spec:
+  accessModes: [ReadWriteMany]
+  # Unset uses the cluster default, which is often RWO-only. Set this.
+  # storageClassName: nfs
+  resources:
+    requests:
+      # GeoLite2-Country is about 10 MB. Headroom for geoipupdate's temp file.
+      storage: 1Gi

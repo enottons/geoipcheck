@@ -1,0 +1,25 @@
+# kubectl apply -k deploy/k8s
+# Prerequisites (secret, storage class, first download): deploy/k8s/README.md.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: geoipcheck
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: geoipcheck
+
+resources:
+  - namespace.yaml
+  - pvc.yaml
+  - cronjob.yaml
+  - deployment.yaml
+  - service.yaml
+  - pdb.yaml
+  - hpa.yaml
+  - networkpolicy.yaml
+
+images:
+  - name: geoipcheck
+    newName: ghcr.io/enottons/geoipcheck
+    newTag: "0.1.0"

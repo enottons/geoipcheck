@@ -1,0 +1,40 @@
+# Local stack: geoipupdate fills a shared volume, geoipcheck reads it.
+#
+#   cp deploy/geoipupdate.env.example deploy/geoipupdate.env   # add your key
+#   docker compose -f deploy/compose.yaml up --build
+#
+# geoipcheck starts before the first download finishes. It reports not ready
+# (/readyz 503) until the file appears, then picks it up within one poll.
+
+services:
+  geoipupdate:
+    image: ghcr.io/maxmind/geoipupdate:v7.1.0
+    env_file: geoipupdate.env
+    environment:
+      GEOIPUPDATE_EDITION_IDS: GeoLite2-Country
+      # Hours between runs. MaxMind publishes GeoLite2 twice a week.
+      GEOIPUPDATE_FREQUENCY: "24"
+    volumes:
+      - geoip:/usr/share/GeoIP
+
+  geoipcheck:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    environment:
+      GEOIPCHECK_DB_PATH: /data/GeoLite2-Country.mmdb
+      GEOIPCHECK_LOG_FORMAT: text
+      # Nothing to drain from locally.
+      GEOIPCHECK_DRAIN_DELAY: 0s
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+      - "8081:8081"
+    volumes:
+      - geoip:/data:ro
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+
+volumes:
+  geoip:

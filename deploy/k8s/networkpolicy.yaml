@@ -1,0 +1,50 @@
+# geoipcheck needs no egress at all: the database is a local file.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: geoipcheck
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: geoipcheck
+  policyTypes: [Ingress, Egress]
+  ingress:
+    # API: only namespaces that opt in, which is the gateway's.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              geoipcheck.enottons.github.io/client: "true"
+      ports:
+        - port: http
+        - port: grpc
+    # Admin: metrics scraping. Kubelet probes come from the node and are
+    # allowed by most CNIs regardless of policy.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: admin
+  egress: []
+---
+# geoipupdate needs DNS and HTTPS to MaxMind. Plain NetworkPolicy can't
+# match on hostnames; tighten to an FQDN policy if the CNI supports one.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: geoipupdate
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: geoipupdate
+  policyTypes: [Ingress, Egress]
+  ingress: []
+  egress:
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - ports:
+        - port: 443
+          protocol: TCP

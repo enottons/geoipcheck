@@ -1,0 +1,7 @@
+# For running geoipupdate directly on a host, outside containers:
+#   cp deploy/GeoIP.conf.example GeoIP.conf     # gitignored; add your key
+#   geoipupdate -f GeoIP.conf -d ./data
+#   GEOIPCHECK_DB_PATH=./data/GeoLite2-Country.mmdb go run ./cmd/geoipcheck
+AccountID 0
+LicenseKey 000000000000
+EditionIDs GeoLite2-Country

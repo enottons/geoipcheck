@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package geoipcheck.v1;
+
+option go_package = "github.com/enottons/geoipcheck/api/proto/geoipcheck/v1;geoipcheckv1";
+
+// CountryCheckService answers one question: is this IP in one of these
+// countries? The caller (the API gateway) owns the policy for each answer.
+service CountryCheckService {
+  // CheckCountry resolves ip to a country and compares it to
+  // allowed_countries.
+  //
+  // Errors:
+  //   INVALID_ARGUMENT    bad ip or country list. Details carry an ErrorInfo
+  //                       (reason = the same code the HTTP API returns, e.g.
+  //                       "invalid_country_code"; metadata "field" and
+  //                       "suggestion" when known). When one field is at
+  //                       fault, a BadRequest names it too.
+  //   UNAVAILABLE         no GeoIP database is loaded. Retry, normally on
+  //                       another replica. Details carry ErrorInfo
+  //                       (reason "database_unavailable") and RetryInfo.
+  //   RESOURCE_EXHAUSTED  request message over 8 KiB.
+  //   DEADLINE_EXCEEDED, CANCELLED, INTERNAL as usual.
+  //
+  // Every ErrorInfo has domain "geoipcheck". Its reason values are lowercase,
+  // not AIP-193 UPPER_SNAKE, so one switch covers both transports.
+  //
+  // The request ID is read from and returned in "x-request-id" header
+  // metadata. A request rejected before decoding (RESOURCE_EXHAUSTED, a
+  // malformed message) gets no echo, but its ID is still in the server log.
+  rpc CheckCountry(CheckCountryRequest) returns (CheckCountryResponse);
+}
+
+message CheckCountryRequest {
+  // IPv4 or IPv6 address, e.g. "81.2.69.142" or "2001:db8::1".
+  string ip = 1;
+  // ISO 3166-1 alpha-2 codes, case-insensitive, 1 to 250 entries.
+  repeated string allowed_countries = 2;
+}
+
+message CheckCountryResponse {
+  // The address as parsed, in canonical form.
+  string ip = 1;
+  // Resolved ISO 3166-1 alpha-2 code. Empty when no country was resolved;
+  // reason says why.
+  string country = 2;
+  Decision decision = 3;
+  Reason reason = 4;
+}
+
+// Decision is the only authoritative outcome. Clients must treat any value
+// they don't recognize, including DECISION_UNSPECIFIED, as DECISION_UNKNOWN.
+enum Decision {
+  DECISION_UNSPECIFIED = 0;
+  DECISION_ALLOWED = 1;
+  DECISION_DENIED = 2;
+  DECISION_UNKNOWN = 3;
+}
+
+// Reason explains the decision. New values may be added; branch on
+// decision, not reason.
+enum Reason {
+  REASON_UNSPECIFIED = 0;
+  // With DECISION_ALLOWED.
+  REASON_COUNTRY_ALLOWED = 1;
+  // With DECISION_DENIED.
+  REASON_COUNTRY_NOT_ALLOWED = 2;
+  // With DECISION_UNKNOWN: private, loopback, or other reserved range.
+  REASON_NON_ROUTABLE_ADDRESS = 3;
+  // With DECISION_UNKNOWN: public address the database has no country for.
+  REASON_COUNTRY_UNRESOLVED = 4;
+}

@@ -1,0 +1,10 @@
+# Generated code is committed so `go build` needs no proto toolchain.
+# Regenerate with `make proto`; CI fails if the output drifts.
+version: v2
+plugins:
+  - local: protoc-gen-go
+    out: api/proto
+    opt: paths=source_relative
+  - local: protoc-gen-go-grpc
+    out: api/proto
+    opt: paths=source_relative

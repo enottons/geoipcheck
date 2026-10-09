@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: geoipcheck
+  labels:
+    # Every pod here already meets the restricted profile; enforce it.
+    pod-security.kubernetes.io/enforce: restricted

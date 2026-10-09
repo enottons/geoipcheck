@@ -1,0 +1,53 @@
+# golangci-lint config. Keep rules strict but focused on real problems.
+version: "2"
+
+run:
+  timeout: 5m
+  build-tags:
+    - integration
+    - e2e
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - gocritic
+    - revive
+    - gosec
+    - misspell
+    - unconvert
+    - bodyclose
+    - noctx
+    - nilerr
+    - errorlint
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - gosec
+      # Tests run under the test's own deadline, and helpers close bodies in
+      # t.Cleanup, which bodyclose can't follow.
+      - path: _test\.go
+        linters:
+          - noctx
+          - bodyclose
+    presets:
+      - common-false-positives
+      - std-error-handling
+
+issues:
+  max-same-issues: 0
+  max-issues-per-linter: 0
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/enottons/geoipcheck

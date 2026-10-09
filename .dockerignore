@@ -1,0 +1,11 @@
+# Keep .git: the build stamps the commit into the binary.
+bin/
+dist/
+deploy/
+docs/
+*.md
+*.test
+*.out
+coverage.*
+GeoIP.conf
+.env
