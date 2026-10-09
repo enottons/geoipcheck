@@ -15,7 +15,7 @@ find it.
 
 ## The core ask
 
-**Restrict UI logins to selected countries, phase 1 IP only.** The service
+**Restrict UI logins to selected countries, phase 1 is IP only.** The service
 decides from the presented IP alone. VPN detection is the obvious phase 2.
 It's sketched in [docs/extensions.md](docs/extensions.md).
 
